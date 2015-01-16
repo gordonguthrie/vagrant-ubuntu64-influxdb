@@ -49,3 +49,10 @@ Then fireup firefox:
 To close down logout back to the host shell and type
 
 `vagrant halt`
+
+Grafana
+-------
+
+The grafana dashboard for Influx is also installed and configured. You can look at it using Firefox
+
+`firefox 127.0.0.1:7777 &`
