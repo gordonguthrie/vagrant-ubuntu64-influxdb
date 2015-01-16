@@ -14,6 +14,8 @@ set -x
 ## Define the global variables
 readonly LOGFILE="/root/vagrant.provision.log"
 readonly INFLUXDB_URL="http://s3.amazonaws.com/influxdb/influxdb_latest_amd64.deb"
+readonly GRAFANA_URL="http://grafanarel.s3.amazonaws.com/"
+readonly GRAFANA_FILE="grafana-1.9.1.tar.gz"
 
 function should_provision_fn () {
     if [ -f  "/var/vagrant_provision" ]; then
@@ -50,6 +52,32 @@ function configure_influxdb_fn() {
     sudo update-rc.d influxdb defaults
 }
 
+install_grafana_fn() {
+    wget ${GRAFANA_URL}${GRAFANA_FILE} >> ${LOGFILE}
+    PWD=`pwd`
+    # has to be hardcoded becuz of the startup script
+    mdkir -p grafana
+    cd grafana
+    tar -xvf /home/vagrant/${GRAFANA_FILE}
+    cd ${PWD}
+}
+
+setup_webserver_fn() {
+    cat > /etc/init.d/grafana <<"EOF"
+#!/bin/bash
+case "$1" in
+   start)
+      PWD=`pwd`
+      cd /home/vagrant/grafana/grafana-1.9.1
+      python -m SimpleHTTPServer 7777 &
+      cd ${PWD}
+      ;;
+   *)
+     echo "whatevs"
+esac
+EOF
+    chmod +x /etc/init.d/grafana
+}
 
 function configure_vagrant_fn() {
     touch /var/vagrant_provision
@@ -60,6 +88,8 @@ function main {
     add_basic_apps_fn
     install_influxdb_fn
     configure_influxdb_fn
+    install_grafana_fn
+    setup_webserver_fn
     configure_vagrant_fn
     echo "Installation finished" >> ${LOGFILE}
 }
