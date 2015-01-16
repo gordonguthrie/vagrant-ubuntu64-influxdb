@@ -77,6 +77,7 @@ case "$1" in
 esac
 EOF
     chmod +x /etc/init.d/grafana
+    sudo update-rc.d influxdb defaults
 }
 
 function configure_vagrant_fn() {
